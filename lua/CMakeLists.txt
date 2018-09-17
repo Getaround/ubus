@@ -8,7 +8,7 @@ IF(NOT LUA_CFLAGS)
 	FIND_PROGRAM(PKG_CONFIG pkg-config)
 	IF(PKG_CONFIG)
 		EXECUTE_PROCESS(
-			COMMAND pkg-config --silence-errors --cflags lua5.1
+			COMMAND pkg-config --silence-errors --cflags lua5.3
 			OUTPUT_VARIABLE LUA_CFLAGS
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
