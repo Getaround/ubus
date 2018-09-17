@@ -249,7 +249,7 @@ ubus_lua_connect(lua_State *L)
 {
 	struct ubus_lua_connection *c;
 	const char *sockpath = luaL_optstring(L, 1, NULL);
-	int timeout = luaL_optint(L, 2, 30);
+	int timeout = luaL_optinteger(L, 2, 30);
 
 	if ((c = lua_newuserdata(L, sizeof(*c))) != NULL &&
 		(c->ctx = ubus_connect(sockpath)) != NULL)
@@ -275,7 +275,7 @@ ubus_lua_objects_cb(struct ubus_context *c, struct ubus_object_data *o, void *p)
 	lua_State *L = (lua_State *)p;
 
 	lua_pushstring(L, o->path);
-	lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+	lua_rawseti(L, -2, lua_rawlen(L, -2) + 1);
 }
 
 static int
@@ -400,7 +400,7 @@ static int ubus_lua_load_methods(lua_State *L, struct ubus_method *m)
 	/* check if the method table is valid */
 	if ((lua_type(L, -2) != LUA_TFUNCTION) ||
 			(lua_type(L, -1) != LUA_TTABLE) ||
-			lua_objlen(L, -1)) {
+			lua_rawlen(L, -1)) {
 		lua_pop(L, 2);
 		return 1;
 	}
@@ -532,7 +532,7 @@ static struct ubus_object* ubus_lua_load_object(lua_State *L)
 		/* check if it looks like a method */
 		if ((lua_type(L, -2) != LUA_TSTRING) ||
 				(lua_type(L, -1) != LUA_TTABLE) ||
-				!lua_objlen(L, -1)) {
+				!lua_rawlen(L, -1)) {
 			lua_pop(L, 1);
 			continue;
 		}
@@ -942,6 +942,10 @@ ubus_lua__gc(lua_State *L)
 
 static const luaL_Reg ubus[] = {
 	{ "connect", ubus_lua_connect },
+	{ NULL, NULL }
+};
+
+static const luaL_Reg conn[] = {
 	{ "objects", ubus_lua_objects },
 	{ "add", ubus_lua_add },
 	{ "notify", ubus_lua_notify },
@@ -972,11 +976,11 @@ luaopen_ubus(lua_State *L)
 	lua_setfield(L, -2, "__index");
 
 	/* fill metatable */
-	luaL_register(L, NULL, ubus);
+	luaL_setfuncs(L, conn, 0);
 	lua_pop(L, 1);
 
 	/* create module */
-	luaL_register(L, MODNAME, ubus);
+	luaL_newlib(L, ubus);
 
 	/* set some enum defines */
 	lua_pushinteger(L, BLOBMSG_TYPE_ARRAY);
@@ -1016,5 +1020,5 @@ luaopen_ubus(lua_State *L)
 	/* create the publisher table - notifications of new subs */
 	lua_createtable(L, 1, 0);
 	lua_setglobal(L, "__ubus_cb_publisher");
-	return 0;
+	return 1;
 }
