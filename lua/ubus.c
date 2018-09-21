@@ -192,11 +192,19 @@ ubus_lua_format_blob(lua_State *L, struct blob_buf *b, bool table)
 		blobmsg_add_u8(b, key, (uint8_t)lua_toboolean(L, -1));
 		break;
 
-#ifdef LUA_TINT
-	case LUA_TINT:
-#endif
 	case LUA_TNUMBER:
-		blobmsg_add_u32(b, key, (uint32_t)lua_tointeger(L, -1));
+		if (lua_isinteger(L, -1))
+		{
+#if (LUA_INT_TYPE == LUA_INT_INT) || (LUA_INT_TYPE == LUA_INT_LONG)
+			blobmsg_add_u32(b, key, (LUA_UNSIGNED)lua_tointeger(L, -1));
+#elif (LUA_INT_TYPE == LUA_LONG_LONG)
+			blobmsg_add_u64(b, key, (LUA_UNSIGNED)lua_tointeger(L, -1));
+#endif
+		}
+		else
+		{
+			blobmsg_add_double(b, key, lua_tonumber(L, -1));
+		}
 		break;
 
 	case LUA_TSTRING:
