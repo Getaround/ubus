@@ -242,6 +242,39 @@ ubus_lua_format_blob(lua_State *L, struct blob_buf *b, bool table)
 static int
 ubus_lua_format_blob_array(lua_State *L, struct blob_buf *b, bool table)
 {
+	/* Sort the keys to keep them in constant order */
+	lua_newtable(L);
+	int i = 1;
+	for (lua_pushnil(L); lua_next(L, -3); )
+	{
+		lua_pop(L, 1);
+		lua_pushvalue(L, -1);
+		lua_rawseti(L, -3, i++);
+	}
+
+	lua_getglobal(L, "table");
+	lua_getfield(L, -1, "sort");
+	lua_remove(L, -2);
+	lua_pushvalue(L, -2);
+	lua_call(L, 1, 0);
+
+	int len = i;
+
+	for(i = 1; i < len; i++) {
+		lua_rawgeti(L, -1, i);
+		lua_pushvalue(L, -1);
+		lua_gettable(L, -4);
+		if (!ubus_lua_format_blob(L, b, table))
+		{
+			lua_pop(L, 1);
+			return false;
+		}
+		lua_pop(L, 2);
+	}
+	lua_pop(L, 1);
+
+	return true;
+
 	for (lua_pushnil(L); lua_next(L, -2); lua_pop(L, 1))
 	{
 		if (!ubus_lua_format_blob(L, b, table))
