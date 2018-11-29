@@ -185,7 +185,6 @@ ubus_lua_format_blob(lua_State *L, struct blob_buf *b, bool table)
 	void *c;
 	bool rv = true;
 	int isint = 0;
-	lua_Integer lua_int = 0;
 	const char *key = table ? lua_tostring(L, -2) : NULL;
 
 	switch (lua_type(L, -1))
@@ -195,12 +194,13 @@ ubus_lua_format_blob(lua_State *L, struct blob_buf *b, bool table)
 		break;
 
 	case LUA_TNUMBER:
-		lua_int = lua_tointegerx(L, -1, &isint);
+	{
+		lua_Integer lua_int = lua_tointegerx(L, -1, &isint);
 		if (isint)
 		{
 #if (LUA_INT_TYPE == LUA_INT_INT) || (LUA_INT_TYPE == LUA_INT_LONG)
 			blobmsg_add_u32(b, key, (LUA_UNSIGNED)lua_int);
-#elif (LUA_INT_TYPE == LUA_LONG_LONG)
+#else
 			blobmsg_add_u64(b, key, (LUA_UNSIGNED)lua_int);
 #endif
 		}
@@ -209,7 +209,7 @@ ubus_lua_format_blob(lua_State *L, struct blob_buf *b, bool table)
 			blobmsg_add_double(b, key, lua_tonumber(L, -1));
 		}
 		break;
-
+	}
 	case LUA_TSTRING:
 	case LUA_TUSERDATA:
 	case LUA_TLIGHTUSERDATA:
