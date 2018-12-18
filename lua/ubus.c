@@ -596,6 +596,7 @@ static struct ubus_object* ubus_lua_load_object(lua_State *L)
 
 static int ubus_lua_add(lua_State *L)
 {
+	int did_add = 0;
 	struct ubus_lua_connection *c = luaL_checkudata(L, 1, METANAME);
 
 	/* verify top level object */
@@ -622,6 +623,7 @@ static int ubus_lua_add(lua_State *L)
 					return 2;
 				}
 				/* allow future reference of ubus obj */
+				did_add = 1;
 				lua_pushstring(state,"__ubusobj");
 				lua_pushlightuserdata(state, obj);
 				lua_settable(state,-3);
@@ -630,7 +632,15 @@ static int ubus_lua_add(lua_State *L)
 		lua_pop(L, 1);
 	}
 
-	return 0;
+	if (!did_add) {
+		lua_pushnil(L);
+		lua_pushliteral(L, "No object to push");
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	return 1;
+
 }
 
 static int
