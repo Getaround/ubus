@@ -600,10 +600,10 @@ static int ubus_lua_add(lua_State *L)
 	struct ubus_lua_connection *c = luaL_checkudata(L, 1, METANAME);
 
 	/* verify top level object */
-	if (lua_gettop(L) != 1) 
-		return luaL_error(L, "takes a single argument, a table");
+	if (lua_gettop(L) != 2) 
+		return luaL_error(L, "takes a single argument, a table: got %d args", lua_gettop(L)-1);
 	if (!lua_istable(L, -1)) 
-		return luaL_error(L, "first  argument must be a table");
+		return luaL_error(L, "first argument must be a table");
 
 	/* scan each object */
 	lua_pushnil(L);
