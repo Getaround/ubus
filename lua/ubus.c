@@ -615,9 +615,13 @@ static int ubus_lua_add(lua_State *L)
 			obj = ubus_lua_load_object(L);
 
 			if (obj){
-				ubus_add_object(c->ctx, obj);
-
-                                /* allow future reference of ubus obj */
+				int ret = ubus_add_object(c->ctx, obj);
+				if (!ret) {
+					lua_pushnil(L);
+					lua_pushstring(L, ubus_strerror(ret));
+					return 2;
+				}
+				/* allow future reference of ubus obj */
 				lua_pushstring(state,"__ubusobj");
 				lua_pushlightuserdata(state, obj);
 				lua_settable(state,-3);
