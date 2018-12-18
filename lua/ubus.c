@@ -617,7 +617,7 @@ static int ubus_lua_add(lua_State *L)
 
 			if (obj){
 				int ret = ubus_add_object(c->ctx, obj);
-				if (!ret) {
+				if (ret != UBUS_STATUS_OK) {
 					lua_pushnil(L);
 					lua_pushstring(L, ubus_strerror(ret));
 					return 2;
