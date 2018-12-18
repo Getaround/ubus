@@ -600,11 +600,10 @@ static int ubus_lua_add(lua_State *L)
 	struct ubus_lua_connection *c = luaL_checkudata(L, 1, METANAME);
 
 	/* verify top level object */
-	if (lua_istable(L, 1)) {
-		lua_pushstring(L, "you need to pass a table");
-		lua_error(L);
-		return 0;
-	}
+	if (lua_gettop(L) != 1) 
+		return luaL_error(L, "takes a single argument, a table");
+	if (lua_istable(L, -1)) 
+		return luaL_error(L, "first  argument must be a table");
 
 	/* scan each object */
 	lua_pushnil(L);
@@ -627,7 +626,7 @@ static int ubus_lua_add(lua_State *L)
 				lua_pushstring(state,"__ubusobj");
 				lua_pushlightuserdata(state, obj);
 				lua_settable(state,-3);
-                        }
+			}
 		}
 		lua_pop(L, 1);
 	}
