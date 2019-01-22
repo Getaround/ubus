@@ -42,6 +42,8 @@ static const char *format_type(void *priv, struct blob_attr *attr)
 	static const char * const attr_types[] = {
 		[BLOBMSG_TYPE_INT8] = "\"Boolean\"",
 		[BLOBMSG_TYPE_INT32] = "\"Integer\"",
+		[BLOBMSG_TYPE_INT64] = "\"Integer64\"",
+		[BLOBMSG_TYPE_DOUBLE] = "\"Double\"",
 		[BLOBMSG_TYPE_STRING] = "\"String\"",
 		[BLOBMSG_TYPE_ARRAY] = "\"Array\"",
 		[BLOBMSG_TYPE_TABLE] = "\"Table\"",
